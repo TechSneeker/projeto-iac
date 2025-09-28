@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problema dos Recipientes - Visualização Interativa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            margin: 0;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            height: calc(100vh - 20px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            font-size: 1.8em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            flex: 1;
+            align-items: center;
+        }
+
+        .jugs-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 20px;
+        }
+
+        .jug-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            justify-self: center;
+        }
+
+        .jug-container .jug-label {
+            margin-top: 15px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+        }
+
+        .jug-container .jug-volume {
+            height: 35px;
+            display: flex;
+            align-items: center;
+        }
+
+        .jug {
+            width: 140px;
+            height: 220px;
+            border: 4px solid #34495e;
+            border-radius: 0 0 18px 18px;
+            position: relative;
+            background: linear-gradient(to bottom, #ecf0f1 0%, #bdc3c7 100%);
+            box-shadow: inset 0 3px 15px rgba(0, 0, 0, 0.1), 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .water {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to bottom, #3498db 0%, #2980b9 100%);
+            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0 0 11px 11px;
+        }
+
+        .water::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .jug-label {
+            margin-top: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .jug-volume {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #3498db;
+            margin-top: 8px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .volume-markers {
+            position: absolute;
+            left: -40px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .marker {
+            height: 20%;
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+
+        .marker::after {
+            content: '';
+            width: 20px;
+            height: 2px;
+            background: #7f8c8d;
+            margin-left: 8px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .controls h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .info-panel {
+            background: #2c3e50;
+            color: white;
+            border-radius: 10px;
+            padding: 12px;
+            flex: 1;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .action-arrow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: #e74c3c;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 100;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-arrow.show {
+            opacity: 1;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #27ae60, #229954);
+            color: white;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .success-message.show {
+            opacity: 1;
+        }
+
+        .step-info {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 3px solid #3498db;
+            padding: 8px;
+            margin: 8px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚰 Problema dos Recipientes</h1>
+        
+        <div class="main-content">
+            <div class="jugs-container">
+                <div class="jug-container">
+                    <div class="jug" id="jug5L">
+                        <div class="volume-markers">
+                            <div class="marker">5L</div>
+                            <div class="marker">4L</div>
+                            <div class="marker">3L</div>
+                            <div class="marker">2L</div>
+                            <div class="marker">1L</div>
+                        </div>
+                        <div class="water" id="water5L"></div>
+                    </div>
+                    <div class="jug-label">Jarro 5L</div>
+                    <div class="jug-volume" id="volume5L">0L</div>
+                </div>
+
+                <div class="jug-container">
+                    <div class="jug" id="jug3L" style="height: 170px;">
+                        <div class="volume-markers">
+                            <div class="marker">3L</div>
+                            <div class="marker">2L</div>
+                            <div class="marker">1L</div>
+                        </div>
+                        <div class="water" id="water3L"></div>
+                    </div>
+                    <div class="jug-label">Jarro 3L</div>
+                    <div class="jug-volume" id="volume3L">0L</div>
+                    <div class="action-arrow" id="actionArrow">→</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <h3>🎯 Controles</h3>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="runAlgorithm('BFS')">
+                        🔍 BFS
+                    </button>
+                    <button class="btn btn-primary" onclick="runAlgorithm('DFS')">
+                        🌳 DFS
+                    </button>
+                    <button class="btn btn-success" onclick="runAlgorithm('Gulosa')">
+                        🎯 Gulosa
+                    </button>
+                    <button class="btn btn-success" onclick="runAlgorithm('A*')">
+                        ⭐ A*
+                    </button>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-warning" onclick="nextStep()">
+                        ▶️ Próximo
+                    </button>
+                    <button class="btn btn-danger" onclick="reset()">
+                        🔄 Reset
+                    </button>
+                </div>
+
+                <div class="info-panel">
+                    <div class="info-item">
+                        <div class="info-label">Estado Atual:</div>
+                        <div id="currentState">[5L:0 | 3L:0]</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Objetivo:</div>
+                        <div>4L no jarro de 5L</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Algoritmo:</div>
+                        <div id="algorithmName">-</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Progresso:</div>
+                        <div id="stepInfo">0/0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="step-info" id="currentAction" style="display: none;">
+                        <strong>Ação:</strong> <span id="actionText"></span>
+                    </div>
+                </div>
+
+                <div class="success-message" id="successMessage">
+                    🎉 OBJETIVO ATINGIDO! 🎉
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado do jogo
+        let gameState = {
+            current: [0, 0],
+            solutionPath: [],
+            currentStep: 0,
+            algorithmName: "",
+            isGoalReached: false
+        };
+
+        // Função para buscar solução do servidor Python
+        async function fetchSolution(algorithm) {
+            try {
+                const response = await fetch(`/solve/${algorithm}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    return data.solution;
+                } else {
+                    alert(`Erro: ${data.error}`);
+                    return [];
+                }
+            } catch (error) {
+                alert(`Erro de conexão: ${error.message}`);
+                return [];
+            }
+        }
+
+        function updateDisplay() {
+            // Atualizar volumes
+            document.getElementById('volume5L').textContent = `${gameState.current[0]}L`;
+            document.getElementById('volume3L').textContent = `${gameState.current[1]}L`;
+            
+            // Atualizar água nos jarros
+            const water5L = document.getElementById('water5L');
+            const water3L = document.getElementById('water3L');
+            
+            water5L.style.height = `${(gameState.current[0] / 5) * 100}%`;
+            water3L.style.height = `${(gameState.current[1] / 3) * 100}%`;
+            
+            // Atualizar estado
+            document.getElementById('currentState').textContent = 
+                `[5L:${gameState.current[0]} | 3L:${gameState.current[1]}]`;
+            
+            // Atualizar progresso
+            document.getElementById('stepInfo').textContent = 
+                `${gameState.currentStep}/${gameState.solutionPath.length}`;
+            
+            const progress = gameState.solutionPath.length > 0 ? 
+                (gameState.currentStep / gameState.solutionPath.length) * 100 : 0;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            
+            // Verificar objetivo
+            gameState.isGoalReached = gameState.current[0] === 4;
+            const successMsg = document.getElementById('successMessage');
+            successMsg.classList.toggle('show', gameState.isGoalReached);
+        }
+
+        async function runAlgorithm(algName) {
+            reset();
+            gameState.algorithmName = algName;
+            
+            // Mostrar loading
+            document.getElementById('algorithmName').textContent = `${algName} (carregando...)`;
+            
+            // Buscar solução do servidor Python
+            const solution = await fetchSolution(algName);
+            
+            if (solution.length > 0) {
+                gameState.solutionPath = solution.map(step => [step.state, step.action]);
+                document.getElementById('algorithmName').textContent = `${algName} (${solution.length} passos)`;
+            } else {
+                document.getElementById('algorithmName').textContent = `${algName} (sem solução)`;
+            }
+            
+            updateDisplay();
+        }
+
+        function nextStep() {
+            if (gameState.currentStep < gameState.solutionPath.length) {
+                const step = gameState.solutionPath[gameState.currentStep];
+                gameState.current = [...step[0]];
+                
+                // Mostrar ação
+                const action = step[1];
+                const actionText = formatAction(action);
+                document.getElementById('actionText').textContent = actionText;
+                document.getElementById('currentAction').style.display = 'block';
+                
+                // Mostrar seta se for Pour
+                const arrow = document.getElementById('actionArrow');
+                if (action[0] === 'Pour') {
+                    arrow.textContent = action[1] === 0 ? '→' : '←';
+                    arrow.classList.add('show');
+                    setTimeout(() => arrow.classList.remove('show'), 1500);
+                }
+                
+                gameState.currentStep++;
+                updateDisplay();
+            }
+        }
+
+        function formatAction(action) {
+            const [type, ...params] = action;
+            
+            switch(type) {
+                case 'Fill':
+                    return `Encher jarro ${params[0] === 0 ? '5L' : '3L'}`;
+                case 'Dump':
+                    return `Esvaziar jarro ${params[0] === 0 ? '5L' : '3L'}`;
+                case 'Pour':
+                    const from = params[0] === 0 ? '5L' : '3L';
+                    const to = params[1] === 0 ? '5L' : '3L';
+                    return `Despejar ${from} → ${to}`;
+                default:
+                    return 'Ação desconhecida';
+            }
+        }
+
+        function reset() {
+            gameState = {
+                current: [0, 0],
+                solutionPath: [],
+                currentStep: 0,
+                algorithmName: "",
+                isGoalReached: false
+            };
+            
+            document.getElementById('algorithmName').textContent = '-';
+            document.getElementById('currentAction').style.display = 'none';
+            document.getElementById('actionArrow').classList.remove('show');
+            
+            updateDisplay();
+        }
+
+        // Controles de teclado
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    nextStep();
+                    break;
+                case 'r':
+                case 'R':
+                    reset();
+                    break;
+            }
+        });
+
+        // Inicializar
+        updateDisplay();
+    </script>
+</body>
+</html>
