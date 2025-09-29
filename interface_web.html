@@ -126,30 +126,27 @@
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        .volume-markers {
+        .jug-marks {
             position: absolute;
-            left: -40px;
             top: 0;
-            height: 100%;
-            display: flex;
-            flex-direction: column-reverse;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 3;
         }
 
-        .marker {
-            height: 20%;
-            display: flex;
-            align-items: center;
-            font-size: 0.9em;
-            color: #7f8c8d;
-            font-weight: bold;
-        }
-
-        .marker::after {
-            content: '';
-            width: 20px;
-            height: 2px;
-            background: #7f8c8d;
-            margin-left: 8px;
+        .jug-mark {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            border-top: 1px dashed rgba(0, 0, 0, 0.3);
+            font-size: 0.7em;
+            color: #2c3e50;
+            text-align: right;
+            padding-right: 6px;
+            line-height: 1;
         }
 
         .controls {
@@ -301,19 +298,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>🚰 Problema dos Recipientes</h1>
+        <h1>Problema dos Recipientes</h1>
         
         <div class="main-content">
             <div class="jugs-container">
                 <div class="jug-container">
                     <div class="jug" id="jug5L">
-                        <div class="volume-markers">
-                            <div class="marker">5L</div>
-                            <div class="marker">4L</div>
-                            <div class="marker">3L</div>
-                            <div class="marker">2L</div>
-                            <div class="marker">1L</div>
-                        </div>
+                        <div class="jug-marks" data-max="5" data-height="220"></div>
                         <div class="water" id="water5L"></div>
                     </div>
                     <div class="jug-label">Jarro 5L</div>
@@ -321,12 +312,8 @@
                 </div>
 
                 <div class="jug-container">
-                    <div class="jug" id="jug3L" style="height: 170px;">
-                        <div class="volume-markers">
-                            <div class="marker">3L</div>
-                            <div class="marker">2L</div>
-                            <div class="marker">1L</div>
-                        </div>
+                    <div class="jug" id="jug3L" style="height: 132px;">
+                        <div class="jug-marks" data-max="3" data-height="132"></div>
                         <div class="water" id="water3L"></div>
                     </div>
                     <div class="jug-label">Jarro 3L</div>
@@ -336,20 +323,20 @@
             </div>
 
             <div class="controls">
-                <h3>🎯 Controles</h3>
+                <h3>Controles</h3>
                 
                 <div class="button-group">
                     <button class="btn btn-primary" onclick="runAlgorithm('BFS')">
-                        🔍 BFS
+                        Largura
                     </button>
                     <button class="btn btn-primary" onclick="runAlgorithm('DFS')">
-                        🌳 DFS
+                        Profundidade
                     </button>
                     <button class="btn btn-success" onclick="runAlgorithm('Gulosa')">
-                        🎯 Gulosa
+                        Gulosa
                     </button>
                     <button class="btn btn-success" onclick="runAlgorithm('A*')">
-                        ⭐ A*
+                        A*
                     </button>
                 </div>
                 
@@ -392,7 +379,7 @@
                 </div>
 
                 <div class="success-message" id="successMessage">
-                    🎉 OBJETIVO ATINGIDO! 🎉
+                    OBJETIVO ATINGIDO!
                 </div>
             </div>
         </div>
@@ -547,7 +534,26 @@
             }
         });
 
+        // Adicionar marcas nos jarros
+        function addJugMarks() {
+            const marks = document.querySelectorAll('.jug-marks');
+
+            marks.forEach(container => {
+                const max = parseInt(container.getAttribute('data-max'));
+                container.innerHTML = '';
+
+                for (let i = 1; i < max; i++) {
+                    const mark = document.createElement('div');
+                    mark.classList.add('jug-mark');
+                    mark.style.bottom = `${(i / max) * 100}%`;
+                    mark.textContent = `${i}L`;
+                    container.appendChild(mark);
+                }
+            });
+        }
+
         // Inicializar
+        addJugMarks();
         updateDisplay();
     </script>
 </body>

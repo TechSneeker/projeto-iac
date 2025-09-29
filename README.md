@@ -5,24 +5,27 @@ Implementação de algoritmos de busca para resolver o problema clássico dos re
 ## Algoritmos Implementados
 
 - **BFS** (Busca em Largura)
-- **DFS** (Busca em Profundidade) 
+- **DFS** (Busca em Profundidade)
 - **Busca Gulosa**
 - **A*** (A-estrela)
 
 ## Como Executar
 
 ### 1. Instalar dependências
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 2. Executar o servidor web
+
 ```bash
 python server.py
 ```
 
 ### 3. Acessar a aplicação
-Abra o navegador em: http://localhost:5000
+
+Abra o navegador em: <http://localhost:5000>
 
 ## Arquivos do Projeto
 
