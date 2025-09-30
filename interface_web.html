@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -107,8 +108,15 @@
         }
 
         @keyframes wave {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
         }
 
         .jug-label {
@@ -265,8 +273,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.1); }
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
         }
 
         .success-message {
@@ -296,10 +311,11 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Problema dos Recipientes</h1>
-        
+
         <div class="main-content">
             <div class="jugs-container">
                 <div class="jug-container">
@@ -324,13 +340,19 @@
 
             <div class="controls">
                 <h3>Controles</h3>
-                
+
                 <div class="button-group">
                     <button class="btn btn-primary" onclick="runAlgorithm('BFS')">
                         Largura
                     </button>
                     <button class="btn btn-primary" onclick="runAlgorithm('DFS')">
                         Profundidade
+                    </button>
+                    <button class="btn btn-primary" onclick="runAlgorithm('DFS-ARVORE')">
+                        Profundidade Arvore
+                    </button>
+                    <button class="btn btn-primary" onclick="runAlgorithm('DLS')">
+                        Profundidade Limitada
                     </button>
                     <button class="btn btn-success" onclick="runAlgorithm('Gulosa')">
                         Gulosa
@@ -339,7 +361,7 @@
                         A*
                     </button>
                 </div>
-                
+
                 <div class="button-group">
                     <button class="btn btn-warning" onclick="nextStep()">
                         ▶️ Próximo
@@ -354,17 +376,17 @@
                         <div class="info-label">Estado Atual:</div>
                         <div id="currentState">[5L:0 | 3L:0]</div>
                     </div>
-                    
+
                     <div class="info-item">
                         <div class="info-label">Objetivo:</div>
                         <div>4L no jarro de 5L</div>
                     </div>
-                    
+
                     <div class="info-item">
                         <div class="info-label">Algoritmo:</div>
                         <div id="algorithmName">-</div>
                     </div>
-                    
+
                     <div class="info-item">
                         <div class="info-label">Progresso:</div>
                         <div id="stepInfo">0/0</div>
@@ -372,7 +394,7 @@
                             <div class="progress-fill" id="progressFill"></div>
                         </div>
                     </div>
-                    
+
                     <div class="step-info" id="currentAction" style="display: none;">
                         <strong>Ação:</strong> <span id="actionText"></span>
                     </div>
@@ -400,7 +422,7 @@
             try {
                 const response = await fetch(`/solve/${algorithm}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     return data.solution;
                 } else {
@@ -417,26 +439,26 @@
             // Atualizar volumes
             document.getElementById('volume5L').textContent = `${gameState.current[0]}L`;
             document.getElementById('volume3L').textContent = `${gameState.current[1]}L`;
-            
+
             // Atualizar água nos jarros
             const water5L = document.getElementById('water5L');
             const water3L = document.getElementById('water3L');
-            
+
             water5L.style.height = `${(gameState.current[0] / 5) * 100}%`;
             water3L.style.height = `${(gameState.current[1] / 3) * 100}%`;
-            
+
             // Atualizar estado
-            document.getElementById('currentState').textContent = 
+            document.getElementById('currentState').textContent =
                 `[5L:${gameState.current[0]} | 3L:${gameState.current[1]}]`;
-            
+
             // Atualizar progresso
-            document.getElementById('stepInfo').textContent = 
+            document.getElementById('stepInfo').textContent =
                 `${gameState.currentStep}/${gameState.solutionPath.length}`;
-            
-            const progress = gameState.solutionPath.length > 0 ? 
+
+            const progress = gameState.solutionPath.length > 0 ?
                 (gameState.currentStep / gameState.solutionPath.length) * 100 : 0;
             document.getElementById('progressFill').style.width = `${progress}%`;
-            
+
             // Verificar objetivo
             gameState.isGoalReached = gameState.current[0] === 4;
             const successMsg = document.getElementById('successMessage');
@@ -446,20 +468,20 @@
         async function runAlgorithm(algName) {
             reset();
             gameState.algorithmName = algName;
-            
+
             // Mostrar loading
             document.getElementById('algorithmName').textContent = `${algName} (carregando...)`;
-            
+
             // Buscar solução do servidor Python
             const solution = await fetchSolution(algName);
-            
+
             if (solution.length > 0) {
                 gameState.solutionPath = solution.map(step => [step.state, step.action]);
                 document.getElementById('algorithmName').textContent = `${algName} (${solution.length} passos)`;
             } else {
                 document.getElementById('algorithmName').textContent = `${algName} (sem solução)`;
             }
-            
+
             updateDisplay();
         }
 
@@ -467,13 +489,13 @@
             if (gameState.currentStep < gameState.solutionPath.length) {
                 const step = gameState.solutionPath[gameState.currentStep];
                 gameState.current = [...step[0]];
-                
+
                 // Mostrar ação
                 const action = step[1];
                 const actionText = formatAction(action);
                 document.getElementById('actionText').textContent = actionText;
                 document.getElementById('currentAction').style.display = 'block';
-                
+
                 // Mostrar seta se for Pour
                 const arrow = document.getElementById('actionArrow');
                 if (action[0] === 'Pour') {
@@ -481,7 +503,7 @@
                     arrow.classList.add('show');
                     setTimeout(() => arrow.classList.remove('show'), 1500);
                 }
-                
+
                 gameState.currentStep++;
                 updateDisplay();
             }
@@ -489,8 +511,8 @@
 
         function formatAction(action) {
             const [type, ...params] = action;
-            
-            switch(type) {
+
+            switch (type) {
                 case 'Fill':
                     return `Encher jarro ${params[0] === 0 ? '5L' : '3L'}`;
                 case 'Dump':
@@ -512,17 +534,17 @@
                 algorithmName: "",
                 isGoalReached: false
             };
-            
+
             document.getElementById('algorithmName').textContent = '-';
             document.getElementById('currentAction').style.display = 'none';
             document.getElementById('actionArrow').classList.remove('show');
-            
+
             updateDisplay();
         }
 
         // Controles de teclado
         document.addEventListener('keydown', (e) => {
-            switch(e.key) {
+            switch (e.key) {
                 case ' ':
                     e.preventDefault();
                     nextStep();
@@ -557,4 +579,5 @@
         updateDisplay();
     </script>
 </body>
+
 </html>

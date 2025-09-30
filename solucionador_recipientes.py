@@ -101,6 +101,73 @@ def busca_largura_cega(start):
                 frontier.append(s2)
     return None, None
 
+def busca_profundidade_arvore(start, max_depth=10**9):
+    parent = {start: (None, None)}
+    found = [None]
+
+    def dfs(s, depth, path_set):
+        if verificar_resultado_baldes(s):
+            found[0] = s
+            return True
+        if depth == 0:
+            return False
+        for a in actions(s):
+            s2 = result(s, a)
+            if s2 in path_set:
+                continue 
+            if s2 not in parent:
+                parent[s2] = (s, a)
+            path_set.add(s2)
+            ok = dfs(s2, depth - 1, path_set)
+            path_set.remove(s2)
+            if ok:
+                return True
+        return False
+
+    dfs(start, max_depth, set([start]))
+    if found[0] is None:
+        return None, None
+    return reconstruir_sequencia_inicio_fim(parent, found[0]), found[0]
+
+def busca_profundidade_limitada(start, limite=12):
+    parent = {start: (None, None)}
+    CUT = object()  # marcador interno
+
+    def rec(s, depth, path_set):
+        if verificar_resultado_baldes(s):
+            return s
+        if depth == 0:
+            return CUT
+        cutoff = False
+        for a in actions(s):
+            s2 = result(s, a)
+            if s2 in path_set:
+                continue
+            if s2 not in parent:
+                parent[s2] = (s, a)
+            path_set.add(s2)
+            r = rec(s2, depth - 1, path_set)
+            path_set.remove(s2)
+            if r is CUT:
+                cutoff = True
+            elif r is not None:
+                return r
+        return CUT if cutoff else None
+
+    res = rec(start, limite, set([start]))
+    if res is CUT:
+        return 'cutoff', None
+    if res is None:
+        return None, None
+    return reconstruir_sequencia_inicio_fim(parent, res), res
+
+def aprofundamento_iterativo(start, limite_max=30):
+    for d in range(limite_max + 1):
+        ans, end = busca_profundidade_limitada(start, d)
+        if ans not in (None, 'cutoff'):
+            return ans, end
+    return None, None
+
 def busca_profundidade_cega(start, max_nodes=10000):
     stack = [start]
     visited = set([start])
@@ -199,19 +266,22 @@ def print_solution(path):
         step += 1
     print(f"\nObjetivo atingido? {verificar_resultado_baldes(path[-1][0])} | Estado final: {mensagem_formatada(path[-1][0])}")
     print(f"Total de passos: {len(path)}")
-
 def menu():
     print("="*60)
     print(" Problema dos Recipientes (5L, 3L) -> objetivo: 4L no jarro de 5L ")
     print("="*60)
     print("Escolha o algoritmo:")
     print(" 1) Busca em Largura (BFS) [Cega, ótima em nº de passos]")
-    print(" 2) Busca em Profundidade (DFS) [Cega, não ótima]")
+    print(" 2) Busca em Profundidade (DFS - grafo) [Cega, não ótima]")
+    print(" 6) Busca em Profundidade (DFS - árvore) [variação]")
+    print(" 7) Profundidade Limitada (DLS)")
+    print(" 8) Aprofundamento Iterativo (IDDFS)")
     print(" 3) Busca Gulosa (heurística h_liters)")
     print(" 4) A* (heurística h_liters)  [Informada]")
     print(" 5) A* (heurística zero)      [Vira custo uniforme]")
     print(" q) Sair")
     return input("Opção: ").strip().lower()
+
 
 def run():
     while True:
@@ -221,34 +291,60 @@ def run():
             break
 
         if op == '1':
-            path, end = busca_largura_cega(INICIO)
+            path, _ = busca_largura_cega(INICIO)
             print("\n== BFS ==")
-            if path is None: print("Sem solução.")
-            else: print_solution(path)
+            print("Sem solução." if path is None else print_solution(path))
 
         elif op == '2':
-            path, end = busca_profundidade_cega(INICIO)
-            print("\n== DFS ==")
-            if path is None: print("Sem solução (ou limite).")
-            else: print_solution(path)
+            path, _ = busca_profundidade_cega(INICIO)
+            print("\n== DFS (grafo) ==")
+            print("Sem solução (ou limite)." if path is None else print_solution(path))
+
+        elif op == '6':
+            path, _ = busca_profundidade_arvore(INICIO)
+            print("\n== DFS (árvore) ==")
+            print("Sem solução." if path is None else print_solution(path))
+
+        elif op == '7':
+            # pergunta leve com default (CLI)
+            try:
+                lim_txt = input("Limite de profundidade (default=12): ").strip()
+                limite = int(lim_txt) if lim_txt else 12
+            except:
+                limite = 12
+            ans, _ = busca_profundidade_limitada(INICIO, limite)
+            print(f"\n== DLS (limite={limite}) ==")
+            if ans == 'cutoff':
+                print("Cutoff (limite atingido, sem solução neste limite).")
+            elif ans is None:
+                print("Sem solução.")
+            else:
+                print_solution(ans)
+
+        elif op == '8':
+            try:
+                lim_txt = input("Limite máximo do IDDFS (default=30): ").strip()
+                limite_max = int(lim_txt) if lim_txt else 30
+            except:
+                limite_max = 30
+            path, _ = aprofundamento_iterativo(INICIO, limite_max)
+            print(f"\n== IDDFS (até {limite_max}) ==")
+            print("Sem solução." if path is None else print_solution(path))
 
         elif op == '3':
-            path, end = busca_gulosa(INICIO, heuristica_conservadora)
+            path, _ = busca_gulosa(INICIO, heuristica_conservadora)
             print("\n== Gulosa (h_liters) ==")
-            if path is None: print("Sem solução.")
-            else: print_solution(path)
+            print("Sem solução." if path is None else print_solution(path))
 
         elif op == '4':
-            path, end = astar(INICIO, heuristica_conservadora)
+            path, _ = astar(INICIO, heuristica_conservadora)
             print("\n== A* (h_liters) ==")
-            if path is None: print("Sem solução.")
-            else: print_solution(path)
+            print("Sem solução." if path is None else print_solution(path))
 
         elif op == '5':
-            path, end = astar(INICIO, h_zero)
+            path, _ = astar(INICIO, h_zero)
             print("\n== A* (h_zero) ==")
-            if path is None: print("Sem solução.")
-            else: print_solution(path)
+            print("Sem solução." if path is None else print_solution(path))
 
         else:
             print("Opção inválida.")

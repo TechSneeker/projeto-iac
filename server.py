@@ -7,7 +7,7 @@ app = Flask(__name__)
 def index():
     with open('interface_web.html', 'r', encoding='utf-8') as f:
         return f.read()
-
+    
 @app.route('/solve/<algorithm>')
 def solve_algorithm(algorithm):
     try:
@@ -15,31 +15,28 @@ def solve_algorithm(algorithm):
             path, _ = busca_largura_cega(INICIO)
         elif algorithm == 'DFS':
             path, _ = busca_profundidade_cega(INICIO)
+        elif algorithm == 'DFS-ARVORE':
+            path, _ = busca_profundidade_arvore(INICIO)
+        elif algorithm == 'DLS':
+            limite = 12
+            ans, _ = busca_profundidade_limitada(INICIO, limite)
+            if ans == 'cutoff':
+                return jsonify({'success': False, 'error': 'cutoff'}), 200
+            path = ans
+        elif algorithm == 'IDDFS':
+            path, _ = aprofundamento_iterativo(INICIO, limite_max=30)
         elif algorithm == 'Gulosa':
             path, _ = busca_gulosa(INICIO, heuristica_conservadora)
         elif algorithm == 'A*':
             path, _ = astar(INICIO, heuristica_conservadora)
         else:
             return jsonify({'error': 'Algoritmo não encontrado'}), 400
-        
+
         if path:
-            # Converter para formato JSON
-            solution = []
-            for state, action in path:
-                solution.append({
-                    'state': list(state),
-                    'action': list(action)
-                })
-            
-            return jsonify({
-                'success': True,
-                'algorithm': algorithm,
-                'steps': len(solution),
-                'solution': solution
-            })
+            solution = [{'state': list(state), 'action': list(action)} for state, action in path]
+            return jsonify({'success': True, 'algorithm': algorithm, 'steps': len(solution), 'solution': solution})
         else:
             return jsonify({'success': False, 'error': 'Sem solução'})
-            
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
