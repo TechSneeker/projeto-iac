@@ -33,3 +33,7 @@ Abra o navegador em: <http://localhost:5000>
 - `server.py` - Servidor Flask para interface web
 - `interface_web.html` - Interface web interativa
 - `teste_pygame.py` - Teste básico do Pygame
+
+
+Feito por:
+Alice, Ricardo, Fellipe e Pedro Henrique
